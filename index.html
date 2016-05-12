@@ -29,7 +29,7 @@
     max-width: 880px;
     color: #555;
     margin: 0 auto 30px auto;
-    font-size: 30px;
+    font-size: 16px;
 }
 
 .demo p:last-child {
@@ -49,6 +49,12 @@
     color: white;
     padding: 3px 8px;
 }
+ul{
+    width: 44%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+}
 </style>
 
 </head>
@@ -65,14 +71,43 @@
 
 <p>Press the <code>?</code> key to see the modal.</p>
 
-<p>More info:<br><a href="http://impressivewebs.github.io/QuestionMark.js/">http://impressivewebs.github.io/QuestionMark.js/</a> and <a href="http://www.impressivewebs.com/questionmark-js-shortcut-keys-displayed/">a blog post</a>.</p>
+<p>Additions to original project:
+<ul>
+<li>Choose the target div via parameter</li>
+<li>Choose which html to show in keyboard "popup"</li>
+<li>Use the Jquery annotation:<br>
+<code>jQuery.questionmark(<br>
+    {<br>
+        'html_location' : '/question.mark.html',<br>
+        'target_id': 'helpTarget'<br>
+    }<br>
+    );
+    </code>
+    </li>
+    </ul>
 
-<p>© <a href="https://twitter.com/ImpressiveWebs">Louis Lazaris</a></p>
+<p>Original project:<br><a href="http://impressivewebs.github.io/QuestionMark.js/">http://impressivewebs.github.io/QuestionMark.js/</a> .</p>
+
+<a href="https://github.com/wouters-frederik/QuestionMark.js">see this project on Github</a>
 </div><!-- .demo -->
 
+<script   src="https://code.jquery.com/jquery-2.2.3.min.js"   integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo="   crossorigin="anonymous"></script>
 <!-- attachevent.js is for IE8 -->
 <!--[if lte IE 8]><script src="js/attachevent.js"></script><![endif]-->
 <script src="js/question.mark.js?v=1.0.3"></script>
+<script>
+    jQuery(document).ready(function () {
+  jQuery.questionmark(
+    {
+        'html_location' : '/question.mark.html',
+        'target_id': 'helpTarget'
+    }
+    );
+  });
+</script>
+<div id="helpTarget"></div>
+
+
 
 <script>
   var _gaq = _gaq || [];

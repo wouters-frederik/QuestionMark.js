@@ -3,23 +3,68 @@
     http://impressivewebs.github.io/QuestionMark.js/
     License: http://creativecommons.org/licenses/by/2.0/, no credit needed.
     This script should work everywhere, including IE8+.
-    If you want IE8 support, include the following 
+    If you want IE8 support, include the following
     polyfill for addEventListener() at the top:
     https://gist.github.com/jonathantneal/2415137
     (included in the repo as attachevent.js).
     Doesn't work in IE6/7, but feel free to fork and fix.
 */
 
-(function () {
+
+(function ($, document, window) {
 
     'use strict';
+    var publicMethod = {};
+    var questionmark = 'questionmark';
+    var settings;
 
-    function removeModal(helpUnderlay) {
+    publicMethod = $.fn[questionmark] = $[questionmark] = function (options, callback) {
+        //var settings;
+        var $obj = this;
+
+        options = options || {};
+
+        if ($.isFunction($obj)) { // assume a call to $.questionmark
+            //$obj = $('<a/>');
+            //options.open = true;
+            publicMethod.doAjax(options);
+        }
+
+        if (!$obj[0]) { // questionmark being applied to empty collection
+            return $obj;
+        }
+
+
+        return $obj;
+    };
+
+
+    var  isEmpty = function(obj) {
+
+        // null and undefined are "empty"
+        if (obj == null) return true;
+
+        // Assume if it has a length property with a non-zero value
+        // that that property is correct.
+        if (obj.length > 0)    return false;
+        if (obj.length === 0)  return true;
+
+        // Otherwise, does it have any properties of its own?
+        // Note that this doesn't handle
+        // toString and valueOf enumeration bugs in IE < 9
+        for (var key in obj) {
+            if (hasOwnProperty.call(obj, key)) return false;
+        }
+
+        return true;
+    };
+
+    var removeModal = function (helpUnderlay) {
         helpUnderlay.className = helpUnderlay.className.replace(/help-isVisible*/g, '');
         helpUnderlay.className = helpUnderlay.className.trim();
-    }
+    };
 
-    function getWindowWidth() {
+    var getWindowWidth = function () {
         var w = window,
             d = document,
             e = d.documentElement,
@@ -29,7 +74,7 @@
         return x;
     }
 
-    function doUnderlayHeight() {
+    var doUnderlayHeight = function () {
         var D = document;
         return Math.max(
             D.body.scrollHeight, D.documentElement.scrollHeight,
@@ -38,7 +83,7 @@
         );
     }
 
-    function doModalSize(o) {
+    var doModalSize = function (o) {
         // Find out how many columns there are, create array of heights
         o.helpColsTotal = 0;
         for (o.i = 0; o.i < o.helpLists.length; o.i += 1) {
@@ -70,7 +115,7 @@
         o.helpModal.style.height = o.maxHeight + 100 + 'px';
     }
 
-    function doWhichKey(e) {
+    var doWhichKey = function (e) {
         e = e || window.event;
         var charCode = e.keyCode || e.which;
         //Line below not needed, but you can read the key with it
@@ -79,8 +124,7 @@
     }
 
     // Primary function, called in checkServerResponse()
-    function doQuestionMark() {
-
+    var doQuestionMark = function () {
         var helpUnderlay = document.getElementById('helpUnderlay'),
             helpModal = document.getElementById('helpModal'),
             helpClose = document.getElementById('helpClose'),
@@ -98,15 +142,12 @@
             classCol;
 
         doModalSize(objDoSize);
-
         document.addEventListener('keypress', function (e) {
-
             // 63 = '?' key
             // '?' key toggles the modal
             if (doWhichKey(e) === 63) {
-                classCol = document.getElementById('helpUnderlay').className;
-                if (classCol.indexOf('help-isVisible') === -1) {
-                    document.getElementById('helpUnderlay').className += ' help-isVisible';
+                if(!$('#helpUnderlay').hasClass('help-isVisible')){
+                    $('#helpUnderlay').addClass('help-isVisible');
                 }
 
             }
@@ -153,7 +194,7 @@
 
     // All the Ajax stuff is below.
     // Probably no reason to touch this unless you can optimize it.
-    function getXhrObject() {
+    var getXhrObject = function () {
         var xhrObject = false;
         // All browsers (except IE6) use the 3 lines below
         if (window.XMLHttpRequest) {
@@ -174,34 +215,37 @@
         return xhrObject;
     }
 
-    function insertHelp(respText, callback) {
+    var insertHelp = function (options, respText, callback) {
         // Opera kept inserting the content multiple times
         // so I added a check to insert it just once... bug??
-        if (!document.getElementById('helpUnderlay')) {
+        if (document.getElementById(options.target_id)) {
+            document.getElementById(options.target_id).innerHTML += respText;
+        }else{
             document.getElementsByTagName('body')[0].innerHTML += respText;
-            callback();
         }
+        callback();
     }
 
-    function checkServerResponse(ajaxCapable) {
+    var checkServerResponse= function (options, ajaxCapable) {
         if (ajaxCapable.readyState === 4) {
             if (ajaxCapable.status === 200 || ajaxCapable.status === 304) {
                 var respText = ajaxCapable.responseText;
                 // here's where the help modal is inserted
-                insertHelp(respText, function () {
+                insertHelp(options, respText, function () {
                     doQuestionMark();
                 });
             }
         }
     }
 
-    function doAjax() {
+    publicMethod.doAjax = function (options) {
+        var $obj = this;
         var ajaxCapable = getXhrObject();
         if (ajaxCapable) {
             ajaxCapable.onreadystatechange = function () {
-                checkServerResponse(ajaxCapable);
+                checkServerResponse(options, ajaxCapable);
             };
-            ajaxCapable.open("POST", "question.mark.html", true);
+            ajaxCapable.open("GET", options.html_location, true);
             ajaxCapable.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             ajaxCapable.send(null);
         } else {
@@ -209,9 +253,6 @@
             document.getElementsByTagName('body')[0].innerHTML += 'Error: Your browser does not support Ajax';
         }
     }
+    publicMethod.settings = settings;
 
-    // This fires all the Ajax stuff, and, in turn,
-    // the primary function for the modal.
-    doAjax();
-
-}());
+}(jQuery, document, window));
